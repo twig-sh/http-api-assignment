@@ -44,7 +44,7 @@ const badRequest = (req, res) => {
   };
 
   if (!req.query.valid || req.query.valid !== 'true') {
-    object.message = 'Missing valid query parameter set to true.';
+    object.message = 'Missing valid query parameter set to true';
     object.id = 'badRequest';
 
     if (acceptedTypes.includes('text/xml') || !acceptedTypes.includes('application/json')) {
