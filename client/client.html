@@ -1,13 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <title>Our simple HTTP server</title>
   <link rel="stylesheet" type="text/css" href="/style.css">
-  
-  <script>
 
+  <script>
+    const handleResponse = async (response, type) => {
+      const content = document.querySelector('#content');
+
+      switch (response.status) {
+        case 200:
+          content.innerHTML = `<b>Success</b>`;
+          break;
+        case 400:
+          content.innerHTML = `<b>Bad Response</b>`;
+          break;
+        case 401:
+          content.innerHTML = `<b>Unauthorized</b>`;
+          break;
+        case 403:
+          content.innerHTML = `<b>Forbidden</b>`;
+          break;
+        case 500:
+          content.innerHTML = `<b>Internal</b>`;
+          break;
+        case 501:
+          content.innerHTML = `<b>Not Implemented</b>`;
+          break;
+        default:
+          content.innerHTML = `<b>Not Found</b>`;
+          break;
+      }
+
+      if (type === 'application/json') {
+        const resObj = await response.json();
+        console.log(resObj);
+        content.innerHTML += `<p>${resObj.message}</p>`;
+      }
+      else if (type === 'text/xml') {
+        const result_text = await response.text();
+
+        console.log(result_text);
+
+        const parseXML = (xml) => {
+          const parsedResponse = new window.DOMParser().parseFromString(xml, 'text/xml');
+          const element =
+            parsedResponse.getElementsByTagName('message')[0].childNodes[0].nodeValue;
+          return element;
+        };
+
+        const resObj = parseXML(result_text);
+        content.innerHTML += `<p>${resObj}</p>`
+      }
+    };
+
+    const sendFetch = async (url, type) => {
+      let response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': type
+        }
+      });
+
+      handleResponse(response, type);
+    };
+
+    const init = () => {
+      const sendButton = document.querySelector('#send');
+      const pageSelect = document.querySelector('#page');
+      const typeSelect = document.querySelector('#type');
+
+      let page = pageSelect.options[pageSelect.selectedIndex].value
+      let type = typeSelect.options[typeSelect.selectedIndex].value
+
+      const request = () => sendFetch(pageSelect.options[pageSelect.selectedIndex].value, typeSelect.options[typeSelect.selectedIndex].value);
+
+      sendButton.addEventListener('click', request);
+    }
+
+    window.onload = init;
   </script>
 </head>
+
 <body>
   <section id="top">
     <h3>Status Code Tests</h3>
@@ -29,4 +104,5 @@
   <section id="content">
   </section>
 </body>
+
 </html>
